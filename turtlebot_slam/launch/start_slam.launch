@@ -11,6 +11,7 @@
          <arg name = "robot_name" value = "burger"/>
     </include>
 
+    <include file="$(find turtlebot3_navigation)/launch/turtlebot3_navigation.launch" pass_all_args="true"/>
 
     <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch" pass_all_args="true"/>
 
