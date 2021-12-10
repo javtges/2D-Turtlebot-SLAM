@@ -6,12 +6,8 @@
 
     <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_house.launch" pass_all_args="true"/>
 
-    <!-- <include file="$(find turtlebot3_navigation)/launch/turtlebot3_navigation.launch" pass_all_args="true"/> -->
-  <!-- Turtlebot3 -->
-
-  <!-- previously had robotmodel burger here -->
     <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch"/>
-
+    
     <node pkg="rviz" type="rviz" name="rviz" required="true"
           args="-d $(find turtlebot3_navigation)/rviz/turtlebot3_navigation.rviz"/>
 
@@ -21,7 +17,5 @@
     </include>
 
     <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch" pass_all_args="true"/>
-
-
 
 </launch>
