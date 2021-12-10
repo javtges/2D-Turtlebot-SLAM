@@ -1,0 +1,17 @@
+<launch>
+
+    <!-- <param name = "robot_description" command="$(find xacro)/xacro '$(find diff_drive)/urdf/ddrive.gazebo.xacro'"/>
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    <node type="rviz" name="rviz" pkg="rviz" args=" -d $(find diff_drive)/config/ddrive.rviz"/>
+    <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/> -->
+
+
+    <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_house.launch" pass_all_args="true">
+         <arg name = "robot_name" value = "burger"/>
+    </include>
+
+
+    <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch" pass_all_args="true"/>
+
+</launch>
