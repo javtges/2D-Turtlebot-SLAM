@@ -1,0 +1,7 @@
+image: /home/james/ME495/HW4/src/homework4/map_gazebo.pgm
+resolution: 0.050000
+origin: [-7.452981, -5.262444, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+
