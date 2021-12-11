@@ -4,8 +4,10 @@ import rospy
 import moveit_commander
 import moveit_msgs.msg
 import actionlib
+import numpy as np
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from nav_msgs.msg import OccupancyGrid
+
 
 
 class explore:
@@ -15,11 +17,52 @@ class explore:
         Initilization function.
         '''
 
+        rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.parse_global)
+        rospy.Subscriber("/move_base/local_costmap/costmap", OccupancyGrid, self.parse_local)
+        rospy.Subscriber("/map", OccupancyGrid, self.parsemap)
 
 
+        client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
+        client.wait_for_server()
 
+        goal = MoveBaseGoal()
+        goal.target_pose.header.frame_id = "map"
+        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.pose.position.x = 0.5
+        goal.target_pose.pose.orientation.w = 1.0
+
+        client.send_goal(goal)
+        wait = client.wait_for_result()
+        if not wait:
+            rospy.logerr("Action server not available!")
+            rospy.signal_shutdown("Action server not available!")
+        else:
+            return client.get_result()
+
+    def parse_global(self, costmap):
+        # map_as_list = costmap.data
+        # height = costmap.info.height
+        # width = costmap.info.width
+        # self.global_costmap  = 0
+        pass
+
+    def parse_local(self, costmap):
+        pass
+
+    def parsemap(self,grid):
+        
+        m = grid.info
+        width = m.width
+        height = m.height
+        map_as_list = grid.data
+        self.totalMap = np.reshape(map_as_list, (height,width))
+
+        print(self.totalMap)
+        print(self.totalMap.shape)
 
 
 if __name__== "__main__":
+    rospy.init_node('explore')
+    np.set_printoptions(threshold=sys.maxsize)
     explore()
     rospy.spin()
