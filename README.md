@@ -17,10 +17,10 @@ The node written for this assignment is the `explore` node. It subscribes to the
 #### Media
 
 - Testing `nav_stack.launch` - 4x speed
-[Nav Stack](navStack.gif)
+![Nav Stack](navStack.gif)
 
 - Testing `slam_stack.launch` with manual movement, 4x speed
-[Slam Stack](slamStack.gif)
+![Slam Stack](slamStack.gif)
 
 - Testing `slam_stack.launch` with automatic movement, 4x speed
-[Auto Slam](autoSlam.gif)
+![Auto Slam](autoSlam.gif)
