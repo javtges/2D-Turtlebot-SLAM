@@ -1,0 +1,7 @@
+<launch>
+
+    <include file="$(find turtlebot_slam)/launch/start_slam.launch"/>
+
+    <node name="explore" pkg="turtlebot_slam" type="explore"/>
+
+</launch>

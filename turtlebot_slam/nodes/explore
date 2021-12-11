@@ -1,4 +1,14 @@
 #!/usr/bin/env python
+'''
+Commands the turtlebot to randomly explore the house.
+
+SUBSCRIBERS:
+  + /move_base/local_costmap/costmap ~ Retrieves the local costmap from the move_base, a square grid centered at the robot's position. Its values range from 0-100, the higher values corresponding to higher cost / more dangerous areas on the map.
+  + /odom ~ Logs the turtlebot odometry, including its pose in the world frame.
+
+CLIENTS:
+  + move_base ~ The MoveBaseAction sends movement commands to the robot.
+'''
 
 import rospy
 import sys
@@ -19,7 +29,7 @@ class explorer():
 
     def __init__(self):
         '''
-        Initilization function.
+        Initilization function for subscribers and global parameters.
         '''
         super(explorer, self).__init__()
 
@@ -28,14 +38,15 @@ class explorer():
         self.local_res = 0.05
         self.local_costmap = np.zeros((60,60))
 
-        # rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.parse_global)
         rospy.Subscriber("/move_base/local_costmap/costmap", OccupancyGrid, self.parse_local)
-        # rospy.Subscriber("/map", OccupancyGrid, self.parsemap)
         rospy.sleep(2)
         rospy.Subscriber("/odom", Odometry, self.do_odom)
 
     def move_to_random(self):
-
+        '''
+        Moves the turtlebot to the random XY value chosen by pick_coords_from_costmap.
+        This uses the move_base simple action client, and waits for the result before moving on.
+        '''
         client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
         client.wait_for_server()
 
@@ -63,6 +74,11 @@ class explorer():
     
 
     def do_odom(self,odom):
+        '''
+        Callback function for the /odom topic.
+        Saves the current turtle X and Y positions, calls the function to pick new coordinates, and then moves the turtle to those coordinates.
+        The last three lines in this function are only called when the turtle finishes moving, so paths are not overwritten.
+        '''
         print("doing odometry")
 
         self.turtle_x = odom.pose.pose.position.x
@@ -74,43 +90,38 @@ class explorer():
         rospy.sleep(4)
 
     def pick_coords_from_costmap(self):
-        
+        '''
+        This function is ran when moving to a new location.
+        It picks a random location within the local costmap area, that is a clear area (given a threshold of the costmap).
+        It then converts the random costmap coordinates to world coordinates that the robot can interpret.
+        '''
         flag = True
         while flag:
             randRow = random.randint(0,self.height-1)
             randCol = random.randint(0,self.width-1)
             randVal = self.local_costmap[randRow,randCol]
-            if randVal < 20:
+            if 0 < randVal and randVal < 20:
                 flag = False
                 print("found a suitable location")
 
         self.chosenX = self.turtle_x + (self.local_res * randRow) - self.local_res*35
-        self.chosenY = self.turtle_y + (self.local_res * randCol) - self.local_res*35 # may have to switch X/Y and +/-
-        
-    # def parse_global(self, costmap):
-    #     map_as_list = costmap.data
-    #     height = costmap.info.height
-    #     width = costmap.info.width
-    #     self.global_costmap = np.reshape(map_as_list, (height,width))
+        self.chosenY = self.turtle_y + (self.local_res * randCol) - self.local_res*35
 
     def parse_local(self, costmap):
+        '''
+        Callback function for the /move_base/local_costmap/costmap topic.
+        Parses the local costmap into a ndarray of the appropriate size of the costmap.
+        '''
         map_as_list = np.asarray(costmap.data)
-        # print(type(map_as_list))
         self.height = costmap.info.height
         self.width = costmap.info.width
         self.local_res = costmap.info.resolution
         self.local_costmap = np.reshape(map_as_list, (self.height,self.width))
-        # print("test",self.local_costmap)
-
-    # def parsemap(self,grid):
-    #     m = grid.info
-    #     width = m.width
-    #     height = m.height
-    #     map_as_list = grid.data
-    #     self.totalMap = np.reshape(map_as_list, (height,width))
-
 
 if __name__== "__main__":
+    '''
+    The main function
+    '''
     rospy.init_node('explore')
     np.set_printoptions(threshold=sys.maxsize)
     explorer()
