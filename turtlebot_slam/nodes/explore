@@ -80,7 +80,7 @@ class explorer():
             randRow = random.randint(0,self.height-1)
             randCol = random.randint(0,self.width-1)
             randVal = self.local_costmap[randRow,randCol]
-            if randVal < 40:
+            if randVal < 20:
                 flag = False
                 print("found a suitable location")
 
