@@ -1,34 +1,52 @@
 #!/usr/bin/env python
 
 import rospy
+import sys
 import moveit_commander
 import moveit_msgs.msg
 import actionlib
 import numpy as np
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from nav_msgs.msg import OccupancyGrid
+from nav_msgs.msg import OccupancyGrid, Odometry
+import random
+from tf import TransformListener
+import tf2_ros
+from copy import deepcopy
+from tf_conversions import transformations
 
 
-
-class explore:
+class explorer():
 
     def __init__(self):
         '''
         Initilization function.
         '''
+        super(explorer, self).__init__()
 
-        rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.parse_global)
+        self.height = 60
+        self.width = 60
+        self.local_res = 0.05
+        self.local_costmap = np.zeros((60,60))
+
+        # rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid, self.parse_global)
         rospy.Subscriber("/move_base/local_costmap/costmap", OccupancyGrid, self.parse_local)
-        rospy.Subscriber("/map", OccupancyGrid, self.parsemap)
+        # rospy.Subscriber("/map", OccupancyGrid, self.parsemap)
+        rospy.sleep(2)
+        rospy.Subscriber("/odom", Odometry, self.do_odom)
 
+    def move_to_random(self):
 
         client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
         client.wait_for_server()
 
+        print("moving to goal")
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "map"
         goal.target_pose.header.stamp = rospy.Time.now()
-        goal.target_pose.pose.position.x = 0.5
+        goal.target_pose.pose.position.x = self.chosenX
+        goal.target_pose.pose.position.y = self.chosenY
+
+        print(f"NEW X and Y: {self.chosenX}, {self.chosenY}")
         goal.target_pose.pose.orientation.w = 1.0
 
         client.send_goal(goal)
@@ -39,30 +57,61 @@ class explore:
         else:
             return client.get_result()
 
-    def parse_global(self, costmap):
-        # map_as_list = costmap.data
-        # height = costmap.info.height
-        # width = costmap.info.width
-        # self.global_costmap  = 0
-        pass
+        print("should have made it, sleeping")
+
+        rospy.sleep(2)
+    
+
+    def do_odom(self,odom):
+        print("doing odometry")
+
+        self.turtle_x = odom.pose.pose.position.x
+        self.turtle_y = odom.pose.pose.position.y
+        print(f"X and Y: {self.turtle_x}, {self.turtle_y}")
+
+        self.pick_coords_from_costmap()
+        self.move_to_random()
+        rospy.sleep(4)
+
+    def pick_coords_from_costmap(self):
+        
+        flag = True
+        while flag:
+            randRow = random.randint(0,self.height-1)
+            randCol = random.randint(0,self.width-1)
+            randVal = self.local_costmap[randRow,randCol]
+            if randVal < 70:
+                flag = False
+                print("found a suitable location")
+
+        self.chosenX = self.turtle_x + (self.local_res * randRow) - self.local_res*35
+        self.chosenY = self.turtle_y + (self.local_res * randCol) - self.local_res*35 # may have to switch X/Y and +/-
+        
+    # def parse_global(self, costmap):
+    #     map_as_list = costmap.data
+    #     height = costmap.info.height
+    #     width = costmap.info.width
+    #     self.global_costmap = np.reshape(map_as_list, (height,width))
 
     def parse_local(self, costmap):
-        pass
+        map_as_list = np.asarray(costmap.data)
+        # print(type(map_as_list))
+        self.height = costmap.info.height
+        self.width = costmap.info.width
+        self.local_res = costmap.info.resolution
+        self.local_costmap = np.reshape(map_as_list, (self.height,self.width))
+        # print("test",self.local_costmap)
 
-    def parsemap(self,grid):
-        
-        m = grid.info
-        width = m.width
-        height = m.height
-        map_as_list = grid.data
-        self.totalMap = np.reshape(map_as_list, (height,width))
-
-        print(self.totalMap)
-        print(self.totalMap.shape)
+    # def parsemap(self,grid):
+    #     m = grid.info
+    #     width = m.width
+    #     height = m.height
+    #     map_as_list = grid.data
+    #     self.totalMap = np.reshape(map_as_list, (height,width))
 
 
 if __name__== "__main__":
     rospy.init_node('explore')
     np.set_printoptions(threshold=sys.maxsize)
-    explore()
+    explorer()
     rospy.spin()
