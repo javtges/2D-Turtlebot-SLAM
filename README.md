@@ -1,9 +1,8 @@
-# homework-4-javtges
-## Turtlebot SLAM
+## 2D Turtlebot SLAM
 ### James Avtges
 
 
-This homework assignemnt involves experimenting with a 2D SLAM package called `slam-toolbox`. The end product is a turtlebot in Gazebo that explores and maps its surroundings. It uses the package MoveBase to plan the turtlebot's path, AMCL for localization, and online asynchronous mapping provided by the slam toolbox.
+This project involves experimenting with a 2D SLAM package called `slam-toolbox`. The end product is a turtlebot in Gazebo that explores and maps its surroundings. It uses the package MoveBase to plan the turtlebot's path, AMCL for localization, and online asynchronous mapping provided by the slam toolbox.
 
 The launchfiles in this package include:
 
@@ -13,6 +12,12 @@ The launchfiles in this package include:
 - `auto_slam.launch` : This launchfile includes `slam_stack.launch`, and also launches the `explore` node to automatically explore the house.
 
 The node written for this assignment is the `explore` node. It subscribes to the local costmap and the robot's odometry, to obtain its position and its information about the immediate surroundings. It randomly moves around the house by choosing random coordinates within the costmap that are marked as open space.
+
+In order to run this on a real turtlebot, the procedure is simple: SSH into the turtlebot and run the desired launchfile without the `turtlebot3_house.launch` launchfile that loads the gazebo world.
+
+### Future Work
+
+Many optimizations exist for such a project. They include frontier exploration SLAM algorithms, reinforcement learning implimentation, which may be experimented with in the future.
 
 #### Media
 
